@@ -34,7 +34,6 @@ public class DashboardView4 extends View {
     private int mLength1; // 长刻度的相对圆弧的长度
     private int mLength2; // 刻度读数顶部的相对圆弧的长度
     private int mPLRadius; // 指针长半径
-    private int mPSRadius; // 指针短半径
 
     private int mPadding;
     private float mCenterX, mCenterY; // 圆心坐标
@@ -62,9 +61,9 @@ public class DashboardView4 extends View {
     }
 
     private void init() {
-        mStrokeWidth = dp2px(3);
-        mLength1 = dp2px(8) + mStrokeWidth;
-        mLength2 = mLength1 + dp2px(4);
+        mStrokeWidth = dp2px(1);
+        mLength1 = dp2px(2) + mStrokeWidth;
+        mLength2 = mLength1 + dp2px(2);
 
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -97,15 +96,15 @@ public class DashboardView4 extends View {
         );
         setPadding(mPadding, mPadding, mPadding, mPadding);
 
-        int width = resolveSize(dp2px(260), widthMeasureSpec);
+        int width = resolveSize(getLayoutParams().width, widthMeasureSpec);
         mRadius = (width - mPadding * 2 - mStrokeWidth * 2) / 2;
 
         // 由起始角度确定的高度
         float[] point1 = getCoordinatePoint(mRadius, mStartAngle);
         // 由结束角度确定的高度
         float[] point2 = getCoordinatePoint(mRadius, mStartAngle + mSweepAngle);
-        int height = (int) Math.max(point1[1] + mRadius + mStrokeWidth * 2,
-                point2[1] + mRadius + mStrokeWidth * 2);
+        int height = (int) Math.max(point1[1] + mStrokeWidth * 2 + dp2px(5),
+                point2[1] + mStrokeWidth * 2 + dp2px(5));
         setMeasuredDimension(width, height + getPaddingTop() + getPaddingBottom());
 
         mCenterX = mCenterY = getMeasuredWidth() / 2f;
@@ -116,30 +115,29 @@ public class DashboardView4 extends View {
                 getMeasuredWidth() - getPaddingBottom() - mStrokeWidth
         );
 
-        mPaint.setTextSize(sp2px(16));
+        mPaint.setTextSize(sp2px(8));
         mPaint.getTextBounds("0", 0, "0".length(), mRectText);
         mRectFInnerArc.set(
-                getPaddingLeft() + mLength2 + dp2px(10),
-                getPaddingTop() + mLength2 + dp2px(10),
-                getMeasuredWidth() - getPaddingRight() - mLength2 - dp2px(10),
-                getMeasuredWidth() - getPaddingBottom() - mLength2 - dp2px(10)
+                getPaddingLeft() + mLength2 + dp2px(5),
+                getPaddingTop() + mLength2 + dp2px(5),
+                getMeasuredWidth() - getPaddingRight() - mLength2 - dp2px(5),
+                getMeasuredWidth() - getPaddingBottom() - mLength2 - dp2px(5)
         );
         mPathRectFInnerArc.set(
-                getPaddingLeft() + mLength2 + dp2px(10),
-                getPaddingTop() + mLength2 + dp2px(10),
-                getMeasuredWidth() - getPaddingRight() - mLength2 - dp2px(10),
-                getMeasuredWidth() - getPaddingBottom() - mLength2 - dp2px(10)
+                getPaddingLeft() + mLength2 + dp2px(5),
+                getPaddingTop() + mLength2 + dp2px(5),
+                getMeasuredWidth() - getPaddingRight() - mLength2 - dp2px(5),
+                getMeasuredWidth() - getPaddingBottom() - mLength2 - dp2px(5)
         );
 
-        mPLRadius = mRadius - dp2px(36);
-        mPSRadius = dp2px(25);
+        mPLRadius = (int) (mRadius * 0.7);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawColor(ContextCompat.getColor(getContext(), R.color.color_dark));
+        canvas.drawColor(ContextCompat.getColor(getContext(), R.color.color_light));
         /**
          * 画圆弧
          */
@@ -194,7 +192,7 @@ public class DashboardView4 extends View {
         /**
          * 画长刻度读数
          */
-        mPaint.setTextSize(sp2px(16));
+        mPaint.setTextSize(sp2px(8));
         mPaint.setStyle(Paint.Style.FILL);
         float α;
         float[] p;
@@ -231,7 +229,7 @@ public class DashboardView4 extends View {
 
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(dp2px(18));
+        mPaint.setStrokeWidth(dp2px(8));
 
 //        mPaint.setShader(generateSweepGradient());
 //        canvas.drawArc(mRectFInnerArc, 180 - mStartAngle, (-mSweepAngle), false, mPaint);
@@ -246,7 +244,7 @@ public class DashboardView4 extends View {
 
         mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setTextSize(sp2px(16));
+        mPaint.setTextSize(sp2px(8));
         mPaint.getTextBounds("极高", 0, "极高".length(), mRectText);
         canvas.drawTextOnPath("极高", mPath, 0, mRectText.height() / 2 - 1, mPaint);
 
@@ -262,7 +260,7 @@ public class DashboardView4 extends View {
 
         mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setTextSize(sp2px(16));
+        mPaint.setTextSize(sp2px(8));
         mPaint.getTextBounds("较高", 0, "较高".length(), mRectText);
         canvas.drawTextOnPath("较高", mPath, 0, mRectText.height() / 2f - 1, mPaint);
 
@@ -278,7 +276,7 @@ public class DashboardView4 extends View {
 
         mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setTextSize(sp2px(16));
+        mPaint.setTextSize(sp2px(8));
         mPaint.getTextBounds("正常", 0, "正常".length(), mRectText);
         canvas.drawTextOnPath("正常", mPath, 0, mRectText.height() / 2 - 1, mPaint);
 
@@ -306,7 +304,6 @@ public class DashboardView4 extends View {
 
         float θ = mStartAngle + mSweepAngle * (mVelocity - mMin) / (mMax - mMin); // 指针与水平线夹角
         float[] p1 = getCoordinatePoint(mPLRadius, θ);
-        float[] p2 = getCoordinatePoint(mPSRadius, θ + 180);
         int r = mRadius / 8;
 
 //        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_dark_light));
