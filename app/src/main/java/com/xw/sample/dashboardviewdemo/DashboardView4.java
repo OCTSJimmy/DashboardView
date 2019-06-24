@@ -3,13 +3,14 @@ package com.xw.sample.dashboardviewdemo;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -21,12 +22,12 @@ import android.view.View;
 public class DashboardView4 extends View {
 
     private int mRadius; // 扇形半径
-    private int mStartAngle = 150; // 起始角度
-    private int mSweepAngle = 240; // 绘制角度
+    private int mStartAngle = 175; // 起始角度
+    private int mSweepAngle = 190; // 绘制角度
     private int mMin = 0; // 最小值
-    private int mMax = 180; // 最大值
-    private int mSection = 9; // 值域（mMax-mMin）等分份数
-    private int mPortion = 2; // 一个mSection等分份数
+    private int mMax = 100; // 最大值
+    private int mSection = 6; // 值域（mMax-mMin）等分份数
+    private int mPortion = 6; // 一个mSection等分份数
     private String mHeaderText = "km/h"; // 表头
     private int mVelocity = mMin; // 实时速度
     private int mStrokeWidth; // 画笔宽度
@@ -40,9 +41,11 @@ public class DashboardView4 extends View {
     private Paint mPaint;
     private RectF mRectFArc;
     private RectF mRectFInnerArc;
+    private RectF mPathRectFInnerArc;
     private Rect mRectText;
     private String[] mTexts;
     private int[] mColors;
+    private Path mPath;
 
     public DashboardView4(Context context) {
         this(context, null);
@@ -69,6 +72,7 @@ public class DashboardView4 extends View {
 
         mRectFArc = new RectF();
         mRectFInnerArc = new RectF();
+        mPathRectFInnerArc = new RectF();
         mRectText = new Rect();
 
         mTexts = new String[mSection + 1]; // 需要显示mSection + 1个刻度读数
@@ -80,6 +84,7 @@ public class DashboardView4 extends View {
         mColors = new int[]{ContextCompat.getColor(getContext(), R.color.color_green),
                 ContextCompat.getColor(getContext(), R.color.color_yellow),
                 ContextCompat.getColor(getContext(), R.color.color_red)};
+        mPath = new Path();
     }
 
     @Override
@@ -114,13 +119,19 @@ public class DashboardView4 extends View {
         mPaint.setTextSize(sp2px(16));
         mPaint.getTextBounds("0", 0, "0".length(), mRectText);
         mRectFInnerArc.set(
-                getPaddingLeft() + mLength2 + mRectText.height() + dp2px(30),
-                getPaddingTop() + mLength2 + mRectText.height() + dp2px(30),
-                getMeasuredWidth() - getPaddingRight() - mLength2 - mRectText.height() - dp2px(30),
-                getMeasuredWidth() - getPaddingBottom() - mLength2 - mRectText.height() - dp2px(30)
+                getPaddingLeft() + mLength2 + dp2px(10),
+                getPaddingTop() + mLength2 + dp2px(10),
+                getMeasuredWidth() - getPaddingRight() - mLength2 - dp2px(10),
+                getMeasuredWidth() - getPaddingBottom() - mLength2 - dp2px(10)
+        );
+        mPathRectFInnerArc.set(
+                getPaddingLeft() + mLength2 + dp2px(10),
+                getPaddingTop() + mLength2 + dp2px(10),
+                getMeasuredWidth() - getPaddingRight() - mLength2 - dp2px(10),
+                getMeasuredWidth() - getPaddingBottom() - mLength2 - dp2px(10)
         );
 
-        mPLRadius = mRadius - dp2px(30);
+        mPLRadius = mRadius - dp2px(36);
         mPSRadius = dp2px(25);
     }
 
@@ -134,8 +145,10 @@ public class DashboardView4 extends View {
          */
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(mStrokeWidth);
-        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
-        canvas.drawArc(mRectFArc, mStartAngle, mSweepAngle, false, mPaint);
+
+//        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
+        mPaint.setColor(Color.parseColor("#666666"));
+//        canvas.drawArc(mRectFArc, mStartAngle, mSweepAngle, false, mPaint);
 
         /**
          * 画长刻度
@@ -145,6 +158,7 @@ public class DashboardView4 extends View {
         double sin = Math.sin(Math.toRadians(mStartAngle - 180));
         float x0 = (float) (mPadding + mStrokeWidth + mRadius * (1 - cos));
         float y0 = (float) (mPadding + mStrokeWidth + mRadius * (1 - sin));
+
         float x1 = (float) (mPadding + mStrokeWidth + mRadius - (mRadius - mLength1) * cos);
         float y1 = (float) (mPadding + mStrokeWidth + mRadius - (mRadius - mLength1) * sin);
 
@@ -162,10 +176,11 @@ public class DashboardView4 extends View {
          * 同样采用canvas的旋转原理
          */
         canvas.save();
+        mPaint.setColor(Color.parseColor("#79c4e6"));
         mPaint.setStrokeWidth(mStrokeWidth / 2f);
-        float x2 = (float) (mPadding + mStrokeWidth + mRadius - (mRadius - 2 * mLength1 / 3f) * cos);
-        float y2 = (float) (mPadding + mStrokeWidth + mRadius - (mRadius - 2 * mLength1 / 3f) * sin);
-        canvas.drawLine(x0, y0, x2, y2, mPaint);
+        float x2 = (float) (mPadding + mStrokeWidth + mRadius - (mRadius - 2 * mLength1 / 2f) * cos);
+        float y2 = (float) (mPadding + mStrokeWidth + mRadius - (mRadius - 2 * mLength1 / 2f) * sin);
+//        canvas.drawLine(x0, y0, x2, y2, mPaint);
         angle = mSweepAngle * 1f / (mSection * mPortion);
         for (int i = 1; i < mSection * mPortion; i++) {
             canvas.rotate(angle, mCenterX, mCenterY);
@@ -194,57 +209,120 @@ public class DashboardView4 extends View {
             } else {
                 mPaint.setTextAlign(Paint.Align.CENTER);
             }
-            mPaint.getTextBounds(mHeaderText, 0, mTexts[i].length(), mRectText);
-            int txtH = mRectText.height();
-            if (i <= 1 || i >= mSection - 1) {
-                canvas.drawText(mTexts[i], p[0], p[1] + txtH / 2, mPaint);
-            } else if (i == 3) {
-                canvas.drawText(mTexts[i], p[0] + txtH / 2, p[1] + txtH, mPaint);
-            } else if (i == mSection - 3) {
-                canvas.drawText(mTexts[i], p[0] - txtH / 2, p[1] + txtH, mPaint);
-            } else {
-                canvas.drawText(mTexts[i], p[0], p[1] + txtH, mPaint);
-            }
+
+/*            if (i == 0) {
+                mPaint.getTextBounds("正常", 0, "正常".length(), mRectText);
+                int txtH = mRectText.height();
+                canvas.drawText("正常", p[0] + mLength2 + dp2px(10), p[1] + txtH / 2, mPaint);
+            } else if (i == 1) {
+                mPaint.getTextBounds("较高", 0, "较高".length(), mRectText);
+                int txtH = mRectText.height();
+                canvas.drawText("较高", p[0] + mLength2 + dp2px(10), p[1] + txtH / 2, mPaint);
+            } else if (i == 2) {
+                mPaint.getTextBounds("极高", 0, "极高".length(), mRectText);
+                int txtH = mRectText.height();
+                canvas.drawText("极高", p[0] + mLength2 + dp2px(5), p[1] + txtH / 2 + mLength2 + dp2px(5), mPaint);
+            }*/
         }
-
-        mPaint.setStrokeCap(Paint.Cap.SQUARE);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(dp2px(10));
-        mPaint.setShader(generateSweepGradient());
-        canvas.drawArc(mRectFInnerArc, mStartAngle + 1, mSweepAngle - 2, false, mPaint);
-
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setShader(null);
 
         /**
-         * 画表头
-         * 没有表头就不画
+         * 画内圈圆弧
          */
-        if (!TextUtils.isEmpty(mHeaderText)) {
-            mPaint.setTextSize(sp2px(16));
-            mPaint.setTextAlign(Paint.Align.CENTER);
-            mPaint.getTextBounds(mHeaderText, 0, mHeaderText.length(), mRectText);
-            canvas.drawText(mHeaderText, mCenterX, mCenterY - mRectText.height() * 3, mPaint);
-        }
+
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(dp2px(18));
+
+//        mPaint.setShader(generateSweepGradient());
+//        canvas.drawArc(mRectFInnerArc, 180 - mStartAngle, (-mSweepAngle), false, mPaint);
+
+        mPaint.setTextAlign(Paint.Align.LEFT);
+        mPaint.setAntiAlias(true);
+
+        mPaint.setColor(Color.parseColor("#ef3a35"));
+        canvas.drawArc(mRectFInnerArc, 180 - mStartAngle, (-mSweepAngle / 3.0f), false, mPaint);
+        mPath.reset();
+        mPath.addArc(mRectFInnerArc, -mSweepAngle / 3.f / 2, 60);
+
+        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setTextSize(sp2px(16));
+        mPaint.getTextBounds("极高", 0, "极高".length(), mRectText);
+        canvas.drawTextOnPath("极高", mPath, 0, mRectText.height() / 2 - 1, mPaint);
+
+
+        mPaint.setColor(Color.parseColor("#efba11"));
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setTextAlign(Paint.Align.LEFT);
+
+        canvas.drawArc(mRectFInnerArc, 180 - mStartAngle - (mSweepAngle / 3.0f), (-mSweepAngle / 3.0f), false, mPaint);
+        mPath.reset();
+        mPath.addArc(mRectFInnerArc, -mSweepAngle / 2f - 2, 60);
+
+        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setTextSize(sp2px(16));
+        mPaint.getTextBounds("较高", 0, "较高".length(), mRectText);
+        canvas.drawTextOnPath("较高", mPath, 0, mRectText.height() / 2f - 1, mPaint);
+
+        mPaint.setColor(Color.parseColor("#1ed6d6"));
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setTextAlign(Paint.Align.LEFT);
+
+        canvas.drawArc(mRectFInnerArc, 180 - mStartAngle - (mSweepAngle / 3.0f * 2), (-mSweepAngle / 3.0f), false, mPaint);
+        mPath.reset();
+
+        mPath.addArc(mRectFInnerArc, (float) (mStartAngle + mSweepAngle / 6f - 90 * (mRectText.width()) / (Math.PI * mRadius)), 45);
+
+        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setTextSize(sp2px(16));
+        mPaint.getTextBounds("正常", 0, "正常".length(), mRectText);
+        canvas.drawTextOnPath("正常", mPath, 0, mRectText.height() / 2 - 1, mPaint);
+
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(dp2px(16));
+
+/*
+        canvas.drawText("较高", mSweepAngle * 1f / 3f - mRectText.width() / 2, mLength1 + mRectText.height() + dp2px(10), mPaint);
+
+        canvas.drawText("极高", mSweepAngle * 1f / 3f - mRectText.width() / 2, mLength1 + mRectText.height() + dp2px(10), mPaint);
+*/
+
+
+        mPaint.setStrokeCap(Paint.Cap.SQUARE);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setShader(null);
+        mPaint.setColor(Color.parseColor("#1296db"));
+
 
         /**
          * 画指针
          */
+
+
         float θ = mStartAngle + mSweepAngle * (mVelocity - mMin) / (mMax - mMin); // 指针与水平线夹角
-        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_dark_light));
+        float[] p1 = getCoordinatePoint(mPLRadius, θ);
+        float[] p2 = getCoordinatePoint(mPSRadius, θ + 180);
         int r = mRadius / 8;
+
+//        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_dark_light));
+
+        //圆心
         canvas.drawCircle(mCenterX, mCenterY, r, mPaint);
         mPaint.setStrokeWidth(r / 3);
-        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
-        float[] p1 = getCoordinatePoint(mPLRadius, θ);
+//        mPaint.setColor(ContextCompat.getColor(getContext(), R.color.color_light));
+
         canvas.drawLine(p1[0], p1[1], mCenterX, mCenterY, mPaint);
-        float[] p2 = getCoordinatePoint(mPSRadius, θ + 180);
-        canvas.drawLine(mCenterX, mCenterY, p2[0], p2[1], mPaint);
+//        canvas.drawLine(mCenterX, mCenterY, p2[0], p2[1], mPaint);
 
         /**
          * 画实时度数值
          */
+        /*
         mPaint.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
         mPaint.setStrokeWidth(dp2px(2));
         int xOffset = dp2px(22);
@@ -260,7 +338,7 @@ public class DashboardView4 extends View {
             drawDigitalTube(canvas, -1, -xOffset);
             drawDigitalTube(canvas, -1, 0);
             drawDigitalTube(canvas, mVelocity, xOffset);
-        }
+        }*/
     }
 
     /**
@@ -352,7 +430,7 @@ public class DashboardView4 extends View {
     private SweepGradient generateSweepGradient() {
         SweepGradient sweepGradient = new SweepGradient(mCenterX, mCenterY,
                 mColors,
-                new float[]{0, 140 / 360f, mSweepAngle / 360f}
+                new float[]{0, 0.1f, 0.25f}
         );
 
         Matrix matrix = new Matrix();
